@@ -1,18 +1,29 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
+	"log"
+	"net/http"
+	"os"
 
-	"github.com/proullon/ramsql/cli"
-	_ "github.com/proullon/ramsql/driver"
+	"github.com/gin-gonic/gin"
+	_ "github.com/heroku/x/hmetrics/onload"
 )
 
 func main() {
-	db, err := sql.Open("ramsql", "")
-	if err != nil {
-		fmt.Printf("Error : cannot open connection : %s\n", err)
-		return
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
 	}
-	cli.Run(db)
+
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.LoadHTMLGlob("templates/*.tmpl.html")
+	router.Static("/static", "static")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl.html", nil)
+	})
+
+	router.Run(":" + port)
 }
