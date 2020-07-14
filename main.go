@@ -1,26 +1,18 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
+	"database/sql"
+	"fmt"
+
+	"github.com/proullon/ramsql/cli"
+	_ "github.com/proullon/ramsql/driver"
 )
 
 func main() {
-	dbName := os.Getenv("DB_NAME")
-	if dbName == "" {
-		dbName = "my.db"
-		log.Print("$DB_NAME is not set, using ", dbName)
+	db, err := sql.Open("ramsql", "")
+	if err != nil {
+		fmt.Printf("Error : cannot open connection : %s\n", err)
+		return
 	}
-	initDatabase(dbName, true)
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-		log.Print("$PORT is not set, using ", port)
-	}
-
-	http.HandleFunc(articlesUrl, urlArticle)
-	http.HandleFunc(articlesSlashUrl, urlArticleSlash)
-	http.ListenAndServe(":"+port, nil)
+	cli.Run(db)
 }
